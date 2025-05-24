@@ -4,6 +4,7 @@ import com.example.pokemonAPI.dtos.LoginRequest;
 import jakarta.persistence.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,9 +30,12 @@ public class User {
     )
     private Set<Role> roles;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable
+            (name = "user_pokemons", joinColumns = @JoinColumn(name = "user_id"
+            ))
     @Column(name = "pokemons")
-    private Set<String> pokemons;
+    private Set<String> pokemons = new HashSet<>();
 
 
     public UUID getId() {
@@ -74,7 +78,7 @@ public class User {
         this.pokemons = pokemons;
     }
 
-    public boolean isLoginCorrect(LoginRequest loginRequest, BCryptPasswordEncoder bCryptPasswordEncoder){
+    public boolean isLoginCorrect(LoginRequest loginRequest, BCryptPasswordEncoder bCryptPasswordEncoder) {
         return bCryptPasswordEncoder.matches(loginRequest.password(), this.password);
     }
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import psyduck from "/home/enos/Área de Trabalho/my-app-folder/mypokedex/src/assets/psyduck.png"
+import psyduck from "../assets/psyduck.png"
 import { Navigate, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
@@ -24,7 +24,7 @@ function Login({ setToken }) {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("acessToken", data.acessToken);
       setToken(data.token);
 
       const decoded = jwtDecode(data.acessToken);

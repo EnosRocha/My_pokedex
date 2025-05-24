@@ -1,5 +1,5 @@
 import { useState } from "react";
-import pikachu from "/home/enos/Área de Trabalho/my-app-folder/mypokedex/src/assets/pikachu.png";
+import pikachu from "../assets/pikachu.png";
 import { Navigate, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
@@ -30,8 +30,15 @@ function Login({ setToken }) {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
+
+      console.log("Resposta completa da API:", data);
+      console.log("Token recebido:", data.acessToken);
+
+      if (!data.acessToken || typeof data.acessToken !== "string") {
+        throw new Error("acessToken não recebido ou formato inválido");
+      }
+      localStorage.setItem("token", data.acessToken);
+      setToken(data.acessToken);
 
       const decoded = jwtDecode(data.acessToken);
       console.log("Decoded JWT:", decoded);

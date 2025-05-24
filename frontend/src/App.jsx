@@ -7,7 +7,7 @@ import Setupuser from "./pages/Setupuser";
 import Listpokemons from "./pages/Lispokemons";
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(localStorage.getItem("acessToken"));
   return (
     <Router>
       <Routes>

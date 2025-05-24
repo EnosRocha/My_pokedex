@@ -1,5 +1,6 @@
 package com.example.pokemonAPI.controllers;
 
+import com.example.pokemonAPI.dtos.AddPokemonDto;
 import com.example.pokemonAPI.dtos.CreateUserDto;
 import com.example.pokemonAPI.models.Role;
 import com.example.pokemonAPI.models.User;
@@ -7,12 +8,13 @@ import com.example.pokemonAPI.repositories.RoleRepository;
 import com.example.pokemonAPI.repositories.UserRepositorie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -35,13 +37,13 @@ public class UserController {
 
         Role basicRole;
 
-        if(basciRoleOptional.isEmpty()){
+        if (basciRoleOptional.isEmpty()) {
             basicRole = new Role();
             basicRole.setRoleId(2L);
             basicRole.setName(Role.Values.USER.name());
             roleRepository.save(basicRole);
             System.out.println("user created");
-        }else{
+        } else {
             basicRole = basciRoleOptional.get();
         }
 
@@ -61,5 +63,48 @@ public class UserController {
 
         });
         return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/addPokemon")
+    private ResponseEntity<Void> addNewPokemon(@RequestBody AddPokemonDto dto) {
+        var userOptional = userRepositorie.findByUserName(dto.userName());
+
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        var user = userOptional.get();
+
+        if (user.getPokemons() == null) {
+            user.setPokemons(new java.util.HashSet<>());
+        }
+
+        user.getPokemons().add(dto.pokemonName());
+
+        userRepositorie.save(user);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/userPokemons")
+    private ResponseEntity<Set<String>> userPokemonsEndPoint(@RequestParam String userName, @AuthenticationPrincipal
+    Jwt jwt) {
+        if (!jwt.getSubject().equals(userName)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+
+        Optional<User> userData = userRepositorie.findByUserName(userName);
+
+        if(userData.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+
+        User finalUser = userData.get();
+        Set<String> userPokemons = finalUser.getPokemons();
+
+        return ResponseEntity.ok(userPokemons);
     }
 }
