@@ -1,6 +1,7 @@
 import { use, useEffect, useState } from "react";
 
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 function getUserNameFromToken(token) {
   if (!token) {
@@ -25,6 +26,7 @@ function Userpokedex({ token }) {
   const [showModal, setShowModal] = useState(false);
   const [userPokemon, setUserPokemon] = useState([]);
   const [currentPokemon, setCurrentPokemon] = useState(0);
+  const navigate = useNavigate();
 
   async function loadPokemons() {
     try {
@@ -53,7 +55,7 @@ function Userpokedex({ token }) {
 
   useEffect(() => {
     if (userPokemon.length > 0) {
-      fetchPokemonImages(userPokemon);
+      fetchAllPokemonsData(userPokemon);
     }
   }, [userPokemon]);
 
@@ -97,7 +99,7 @@ function Userpokedex({ token }) {
     fetchPokemon(pokemonName);
   }
 
-  async function fetchPokemonImages(pokemonList) {
+  async function fetchAllPokemonsData(pokemonList) {
     try {
       console.log("Lista recebida:", pokemonList);
       const pokemonsWithImages = await Promise.all(
@@ -112,13 +114,7 @@ function Userpokedex({ token }) {
           }
 
           const data = await response.json();
-
-          return {
-            name: pokemonName,
-            image: data.sprites.front_default,
-            types: data.types.map((t) => t.type.name),
-            id: data.id,
-          };
+          return data;
         })
       );
 
@@ -128,12 +124,16 @@ function Userpokedex({ token }) {
 
       setPokemonsData(validPokemons);
     } catch (error) {
-      console.error("Erro ao buscar imagens dos Pokémons:", error);
+      console.error("Erro ao buscar dados dos Pokémons:", error);
     }
   }
 
   return (
-    <div className="flex items-center bg-amber-600 h-screen w-screen">
+    <div
+      className="flex items-center bg-amber-600 h-screen w-screen overflow-x-hidden
+    
+    "
+    >
       <div className="relative bg-red-600 h-220 w-155 rounded-[20px] shadow-2xl border-2 left-110">
         <div className="relative bg-red-600 h-218 w-155 rounded-[20px] shadow-2xl border-2 left-2"></div>
         <div className=" absolute bg-gray-200 w-30 h-30 rounded-full left-19 top-10 shadow-md border-2"></div>
@@ -150,7 +150,6 @@ function Userpokedex({ token }) {
         <div className=" absolute bg-white w-2 h-2 rounded-full top-16  left-76 border-2"></div>
         <div className=" absolute bg-green-500 w-6 h-6 rounded-full top-15  left-90 border-2"></div>
         <div className=" absolute bg-white w-2 h-2 rounded-full top-16  left-91 border-2"></div>
-
         {/*tela da pokedex */}
         <div className="absolute bg-neutral-500 h-100 w-100 top-60 left-20 shadow-md rounded-bl-[50px] rounded-[15px] border-2">
           <div className=" absolute bg-red-500 w-4 h-4 rounded-full top-4  left-35 border-3"></div>
@@ -160,12 +159,15 @@ function Userpokedex({ token }) {
            items-center"
           >
             {pokemonsData.length > 0 ? (
-              <img className=" h-60" src={pokemonsData[currentPokemon].image} />
+              <img
+                className=" h-60"
+                src={pokemonsData[currentPokemon].sprites.front_default}
+              />
             ) : (
-              <p className="text-gray-500 text-center">
+              <p className="text-gray-500 text-center font-bold">
                 {userPokemon.length === 0
-                  ? "Nenhum Pokémon capturado ainda!"
-                  : "Carregando Pokémon..."}
+                  ? "No Pokémon has been captured yet!"
+                  : "Loading Pokémons..."}
               </p>
             )}
           </div>
@@ -183,11 +185,11 @@ function Userpokedex({ token }) {
         <div className=" bottom nob">
           <div
             className=" absolute bg-green-950
-             w-20 h-20 shadown-md rounded-full top-170  left-15 border-2"
+             w-20 h-20 shadown-md rounded-full top-170  left-15 border-2 "
           ></div>
           <div
             className=" absolute bg-green-950
-             w-20 h-20 shadown-md rounded-full top-169  left-16 border-2"
+             w-20 h-20 shadown-md rounded-full top-169  left-16 border-2 hover:scale-110 active:scale-90"
             onClick={() => setShowModal(true)}
           ></div>
         </div>
@@ -213,12 +215,12 @@ function Userpokedex({ token }) {
         ></div>
         <div
           className=" absolute bg-green-950
-             w-15 h-10 shadown-md top-185 rounded-[5px]  left-107 border-2"
+             w-15 h-10 shadown-md top-185 rounded-[5px]  left-107 border-2 hover:scale-110 active:scale-90"
           onClick={() => navigatePokemons("prev")}
         ></div>
         <div
           className=" absolute bg-green-950
-             w-15 h-10 shadown-md top-185 rounded-[5px]  left-132 border-2"
+             w-15 h-10 shadown-md top-185 rounded-[5px]  left-132 border-2 hover:scale-110 active:scale-90"
           onClick={() => navigatePokemons("next")}
         ></div>
         <div className="absolute bg-black w-85 h-1 top-45 left-2"></div>
@@ -226,22 +228,60 @@ function Userpokedex({ token }) {
         <div className="absolute bg-black w-59 h-1 top-31 left-98"></div>
         <div className="absolute bg-black w-18 h-1 top-38 left-84 rotate-130"></div>
         <div className="absolute bg-black w-21 h-0.5 top-40 left-85 rotate-130"></div>
-
         <div className="absolute w-18 h-185 bg-red-500 top-32 left-157 border-1"></div>
         <div className="absolute w-5 h-185 bg-red-300 top-32 left-160"></div>
-
         <div className="absolute w-18 h-2 bg-black top-32 left-157"></div>
         <div className="absolute w-18 h-2 bg-black top-215 left-157"></div>
         <div className="absolute w-18 h-2 bg-red-900 border-2 top-180 left-157"></div>
         <div className="absolute w-18 h-2 bg-red-900 border-2 top-75 left-157"></div>
         <div className="absolute bg-red-600 h-170 w-155 rounded-[20px] shadow-2xl border border-t-0 border-black left-175 top-50 rounded-t-none"></div>
         <div className="absolute bg-red-600 h-17 w-90 border border-b-0 border-black left-175 top-34 rounded-t-none "></div>
+        <div
+          onClick={() => navigate("/viewPokemons")}
+          className="absolute bg-white h-22 w-42 rounded-md top-140 left-190 border-2 hover:scale-110 active:scale-90 transition-transform font-bold text-2xl p-5 flex flex-col justify-center items-center"
+        >
+          <p>Advanced </p>
+          <p>search</p>
+        </div>
+        <div className="bg-white absolute h-50 w-[500px] top-60 left-190 rounded-md border-2">
+          {pokemonsData.length > 0 ? (
+            <div className="h-full w-full flex flex-wrap flex-col justify-center items-center font-bold text-2xl">
+              <p>
+                Nome: {pokemonsData[currentPokemon].name}, (id:{" "}
+                {pokemonsData[currentPokemon].id})
+              </p>
+              <p>
+                Tipo:{" "}
+                {pokemonsData[currentPokemon].types
+                  .map((p) => p.type.name)
+                  .join(",")}
+              </p>
+              <p>
+                Base de experiencia:{" "}
+                {pokemonsData[currentPokemon].base_experience}
+              </p>
+              <p>Altura: {pokemonsData[currentPokemon].height}</p>
+              <p>Peso: {pokemonsData[currentPokemon].weight}</p>
+              <p>
+                Habilidades:{" "}
+                {pokemonsData[currentPokemon].abilities
+                  .map((p) => p.ability.name)
+                  .slice(0, 2)
+                  .join(",")}
+              </p>
+            </div>
+          ) : (
+            <div className="h-full w-full font-bold flex justify-center items-center">
+              "No information about pokemons provided yet"
+            </div>
+          )}
+        </div>
 
         {showModal && (
           <div className="fixed top-0 left-0 w-full h-full bg-black/60 flex justify-center items-center ">
-            <div className="bg-white p-6 rounded shadow-lg h-60 w-60">
+            <div className="bg-white p-6 rounded shadow-lg h-60 w-70 flex flex-col ">
               <h2 className="text-xl font-bold mb-4">
-                Digite o nome do Pokémon
+                Enter just one Pokemon name at a time
               </h2>
               <input
                 type="text"
@@ -253,15 +293,15 @@ function Userpokedex({ token }) {
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-400 text-white px-4 py-2 rounded h-10 w-30"
+                  className="bg-gray-400 text-white px-4 py-2 rounded h-10 w-30 transition-transform hover:scale-110 active:scale-90"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   onClick={() => addPokemon(name)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded h-10 w-30"
+                  className="bg-blue-500 text-white px-4 py-2 rounded h-10 w-30 transition-transform hover:scale-110 active:scale-90"
                 >
-                  Buscar
+                  Enter
                 </button>
               </div>
             </div>
@@ -280,7 +320,7 @@ function Userpokedex({ token }) {
               src={pokemonData.sprites.front_default}
               alt={pokemonData.name}
             />
-            <p className="text-3xl text-green-700"> Pokemon adicionado !</p>
+            <p className="text-3xl text-green-700"> Pokemon added!</p>
           </div>
         )}
       </div>

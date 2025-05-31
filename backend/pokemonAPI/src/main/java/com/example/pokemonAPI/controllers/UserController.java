@@ -1,5 +1,6 @@
 package com.example.pokemonAPI.controllers;
 
+import com.example.pokemonAPI.dtos.AddFirstPokemonDto;
 import com.example.pokemonAPI.dtos.AddPokemonDto;
 import com.example.pokemonAPI.dtos.CreateUserDto;
 import com.example.pokemonAPI.models.Role;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
@@ -67,7 +69,11 @@ public class UserController {
 
 
     @PostMapping("/addPokemon")
-    private ResponseEntity<Void> addNewPokemon(@RequestBody AddPokemonDto dto) {
+    private ResponseEntity<Void> addNewPokemon(@RequestBody AddPokemonDto dto, @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (!jwt.getSubject().equals(dto.userName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         var userOptional = userRepositorie.findByUserName(dto.userName());
 
 
@@ -98,7 +104,7 @@ public class UserController {
 
         Optional<User> userData = userRepositorie.findByUserName(userName);
 
-        if(userData.isEmpty()){
+        if (userData.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -106,5 +112,32 @@ public class UserController {
         Set<String> userPokemons = finalUser.getPokemons();
 
         return ResponseEntity.ok(userPokemons);
+    }
+
+    @PostMapping("/addFirst")
+    private ResponseEntity<Void> addTheFirstPokemons(@RequestBody AddFirstPokemonDto dto, @AuthenticationPrincipal Jwt jwt) {
+        if (!jwt.getSubject().equals(dto.userName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        System.out.println(jwt.getSubject());
+        System.out.println(dto.userName());
+        var userOptional = userRepositorie.findByUserName(dto.userName());
+
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        var user = userOptional.get();
+
+        if (user.getPokemons() == null) {
+            user.setPokemons(new java.util.HashSet<>());
+        }
+
+        user.getPokemons().addAll(Arrays.asList(dto.pokemons()));
+
+        userRepositorie.save(user);
+
+        return ResponseEntity.ok().build();
     }
 }
