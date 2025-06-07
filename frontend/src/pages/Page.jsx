@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { CheckCheck } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import psyduckloading from "../assets/psyduckloading.gif";
 
 function getUserNameFromToken(token) {
   if (!token) {
@@ -24,6 +25,7 @@ function Page({ token }) {
   const [pokemons, setPokemons] = useState([]);
   const [current, setCurrent] = useState(0);
   const [ShowModal, setShowModal] = useState(false);
+  const [pokemonLoading, setPokemonLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [pokemonsData, setPokemonsData] = useState([]);
   const [locationArea, setLocationArea] = useState([]);
@@ -44,7 +46,8 @@ function Page({ token }) {
         body: JSON.stringify({ pokemons, userName }),
       });
       if (sendToBackEndApi.ok) {
-        navigate("/userpokedex");
+        setPokemonLoading(false);
+        navigate("/userpokedex", { state: { success: true } });
       }
     } catch (error) {
       console.warn(`Error was found while trying to fetch the pokemons`, error);
@@ -110,6 +113,7 @@ function Page({ token }) {
       const validHabitat = habitat.filter((p) => p !== null);
       setPokemonsData(validPokemons);
       setLocationArea(validHabitat);
+      setPokemonLoading(false);
       setShowModal(true);
     } catch (error) {
       console.error("Erro ao buscar pokemons", error);
@@ -186,12 +190,20 @@ function Page({ token }) {
         />
         <button
           className="bg-white h-10 w-20 rounded-md border-2 hover:scale-110 active:scale-90 transition-transform"
-          onClick={() => addPokemonsToArray()}
+          onClick={() => {
+            addPokemonsToArray(), setPokemonLoading(true);
+          }}
         >
           {" "}
           GO{" "}
         </button>
       </div>
+      {pokemonLoading && (
+        <div className="absolute h-screen w-screen bg bg-black/40 flex flex-col justify-center items-center">
+          <img src={psyduckloading} alt="psyduckloading" />
+          <p className="text-green-600 font-bold text-2xl">Loading pokemons</p>
+        </div>
+      )}
       {ShowModal && pokemonsData.length > 0 && pokemonsData[current] && (
         <div className="absolute h-[500px] w-[800px] bg-red-500 rounded-[20px] flex">
           <div className="absolute top-10 left-10 bg-white h-40 w-30 rounded-md border-2">
@@ -283,7 +295,9 @@ function Page({ token }) {
           </div>
           <div
             title="Take the pokemons you searched for"
-            onClick={() => addFisrtToUser(pokemons)}
+            onClick={() => {
+              addFisrtToUser(pokemons);
+            }}
             className="absolute h-10 w-10 rounded-md bg-amber-50 top-85 left-168 flex p-1 flex-wrap justify-center items-center hover:scale-110 active:scale-90"
           >
             <Check />

@@ -6,6 +6,7 @@ import Userpokedex from "./pages/Userpokedex";
 import Setupuser from "./pages/Setupuser";
 import Listpokemons from "./pages/Lispokemons";
 import Page from "./pages/Page";
+import UsersList from "./pages/UsersList";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("acessToken"));
@@ -15,9 +16,10 @@ function App() {
         <Route path="/login" element={<Login setToken={setToken} />} />
         <Route path="/adminpokedex" element={<Adminpokedex token={token} />} />
         <Route path="/userpokedex" element={<Userpokedex token={token} />} />
-        <Route path="/setupuser" element={<Setupuser token={token}/>} />
-        <Route path="/listpokemons" element={<Listpokemons token={token}/>}/>
-        <Route path="/viewPokemons" element={<Page token={token}/>}/>
+        <Route path="/setupuser" element={<Setupuser token={token} />} />
+        <Route path="/listpokemons" element={<Listpokemons token={token} />} />
+        <Route path="/viewPokemons" element={<Page token={token} />} />
+        <Route path="/usersList" element={<UsersList token={token} />} />
       </Routes>
     </Router>
   );

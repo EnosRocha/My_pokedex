@@ -9,15 +9,14 @@ import com.example.pokemonAPI.repositories.RoleRepository;
 import com.example.pokemonAPI.repositories.UserRepositorie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.method.AuthorizeReturnObject;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 public class UserController {
@@ -139,5 +138,13 @@ public class UserController {
         userRepositorie.save(user);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getUsers")
+    public ResponseEntity<List<User>> returnAllUsers(@AuthenticationPrincipal Jwt jwt) {
+        System.out.println("users authenticaded:" + jwt.getSubject());
+        List<User> users = userRepositorie.findAll();
+        return ResponseEntity.ok(users);
+
     }
 }

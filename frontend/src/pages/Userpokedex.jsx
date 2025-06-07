@@ -1,7 +1,8 @@
 import { use, useEffect, useState } from "react";
 
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import truescorndance from "../assets/truescorndance.gif";
 
 function getUserNameFromToken(token) {
   if (!token) {
@@ -25,7 +26,9 @@ function Userpokedex({ token }) {
   const [pokemonsData, setPokemonsData] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [userPokemon, setUserPokemon] = useState([]);
-  const [currentPokemon, setCurrentPokemon] = useState(0);
+  const [current, setCurrent] = useState(0);
+  const location = useLocation();
+  const [isSucceeded, setIsSucceeded] = useState(false);
   const navigate = useNavigate();
 
   async function loadPokemons() {
@@ -58,9 +61,12 @@ function Userpokedex({ token }) {
       fetchAllPokemonsData(userPokemon);
     }
   }, [userPokemon]);
+  useEffect(() => {
+    setIsSucceeded(location.state?.success);
+  }, [location.state]);
 
   function navigatePokemons(direction) {
-    setCurrentPokemon((prev) => {
+    setCurrent((prev) => {
       if (direction === "next") {
         return (prev + 1) % pokemonsData.length;
       } else {
@@ -99,6 +105,18 @@ function Userpokedex({ token }) {
     fetchPokemon(pokemonName);
   }
 
+  function cry() {
+    const cryUrl = pokemonsData[current].cries.latest;
+    console.log(cryUrl);
+    const audio = new Audio(cryUrl);
+    audio.play();
+  }
+  function cryLegacy() {
+    const cryUrl = pokemonsData[current].cries.legacy;
+    console.log(cryUrl);
+    const audio = new Audio(cryUrl);
+    audio.play();
+  }
   async function fetchAllPokemonsData(pokemonList) {
     try {
       console.log("Lista recebida:", pokemonList);
@@ -161,7 +179,7 @@ function Userpokedex({ token }) {
             {pokemonsData.length > 0 ? (
               <img
                 className=" h-60"
-                src={pokemonsData[currentPokemon].sprites.front_default}
+                src={pokemonsData[current].sprites.front_default}
               />
             ) : (
               <p className="text-gray-500 text-center font-bold">
@@ -238,33 +256,49 @@ function Userpokedex({ token }) {
         <div className="absolute bg-red-600 h-17 w-90 border border-b-0 border-black left-175 top-34 rounded-t-none "></div>
         <div
           onClick={() => navigate("/viewPokemons")}
-          className="absolute bg-white h-22 w-42 rounded-md top-140 left-190 border-2 hover:scale-110 active:scale-90 transition-transform font-bold text-2xl p-5 flex flex-col justify-center items-center"
+          className="absolute bg-white h-22 w-42 rounded-md top-155 left-200 border-2 hover:scale-110 active:scale-90 transition-transform font-bold text-2xl p-5 flex flex-col justify-center items-center"
         >
           <p>Advanced </p>
           <p>search</p>
         </div>
+        <div className="absolute top-[750px] h-20 w-50 bg-gray-900 rounded-md left-[800px]"></div>
+        <div className="absolute top-[620px] h-15 w-15 bg-yellow-400 rounded-full left-[1150px]"></div>
+        <div className="absolute top-[750px] h-20 w-50 bg-gray-900 rounded-md left-[1050px]"></div>
+        <div className="absolute top-[425px] grid grid-cols-5 grid-rows-2 p-5 left-[800px] w-110">
+          <div
+            onClick={() => cry()}
+            className="bg-cyan-500 w-20 h- border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"
+          ></div>
+          <div onClick={()=> cryLegacy()} className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+          <div className="bg-cyan-500 w-20 h-20 border border-black p-6 flex items-center justify-center hover:scale-110 transition-transform"></div>
+        </div>
+
         <div className="bg-white absolute h-50 w-[500px] top-60 left-190 rounded-md border-2">
           {pokemonsData.length > 0 ? (
             <div className="h-full w-full flex flex-wrap flex-col justify-center items-center font-bold text-2xl">
               <p>
-                Nome: {pokemonsData[currentPokemon].name}, (id:{" "}
-                {pokemonsData[currentPokemon].id})
+                Nome: {pokemonsData[current].name}, (id:{" "}
+                {pokemonsData[current].id})
               </p>
               <p>
                 Tipo:{" "}
-                {pokemonsData[currentPokemon].types
-                  .map((p) => p.type.name)
-                  .join(",")}
+                {pokemonsData[current].types.map((p) => p.type.name).join(",")}
               </p>
               <p>
-                Base de experiencia:{" "}
-                {pokemonsData[currentPokemon].base_experience}
+                Base de experiencia: {pokemonsData[current].base_experience}
               </p>
-              <p>Altura: {pokemonsData[currentPokemon].height}</p>
-              <p>Peso: {pokemonsData[currentPokemon].weight}</p>
+              <p>Altura: {pokemonsData[current].height}</p>
+              <p>Peso: {pokemonsData[current].weight}</p>
               <p>
                 Habilidades:{" "}
-                {pokemonsData[currentPokemon].abilities
+                {pokemonsData[current].abilities
                   .map((p) => p.ability.name)
                   .slice(0, 2)
                   .join(",")}
@@ -276,6 +310,19 @@ function Userpokedex({ token }) {
             </div>
           )}
         </div>
+        {isSucceeded && (
+          <div
+            className="absolute top-60 left-120 h-96 rounded-md w-96 bg-white p-2
+            shadow-lg flex flex-col justify-center items-center animate-bounce"
+            onClick={() => setIsSucceeded(false)}
+          >
+            <img className="w-55" src={truescorndance} alt="loading image" />
+            <p className="text-3xl text-green-700 text-center">
+              {" "}
+              All Pokemons have been added!
+            </p>
+          </div>
+        )}
 
         {showModal && (
           <div className="fixed top-0 left-0 w-full h-full bg-black/60 flex justify-center items-center ">

@@ -32,12 +32,19 @@ public class TokenController {
     }
 
     @PostMapping("/login")
-    private ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        System.out.println("Login attempt for username: " + loginRequest.username());
         var user = userRepositorie.findByUserName(loginRequest.username());
-        if (!user.isPresent() || !user.get().isLoginCorrect(loginRequest, bCryptPasswordEncoder)) {
+        if (!user.isPresent()) {
+            System.out.println("User not found: " + loginRequest.username());
             throw new BadCredentialsException("either the password or username don`t match those registered in DB");
 
         }
+        if (!user.get().isLoginCorrect(loginRequest, bCryptPasswordEncoder)) {
+            System.out.println("Password mismatch for user: " + loginRequest.username());
+            throw new BadCredentialsException("Password does not match");
+        }
+
         var now = Instant.now();
         var expiresIn = 300L;
 
@@ -55,6 +62,7 @@ public class TokenController {
                 .build();
 
         var jwrValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        System.out.println(jwrValue);
         return ResponseEntity.ok(new LoginResponse(jwrValue, expiresIn));
     }
 }

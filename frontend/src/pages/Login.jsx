@@ -1,5 +1,6 @@
 import { useState } from "react";
 import pikachu from "../assets/pikachu.png";
+import pikachudancing from "../assets/pikachudancing.gif";
 import { Navigate, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
@@ -88,7 +89,7 @@ function Login({ setToken }) {
     <div className="flex h-screen h-screen justify-center items-center bg-slate-500">
       <div className="flex flex-col justify-center gap-5 shadow-md items-center h-100 w-60 bg-white rounded-md">
         <img
-          src={pikachu}
+          src={pikachudancing}
           alt="pikachu"
           className="h-40 hover:scale-110 transition-transform"
         />
