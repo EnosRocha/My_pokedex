@@ -19,7 +19,7 @@ public class SendGridEmailService {
     private String sendGridApiKey;
 
     public void sendEmail(String to, String subject, String contentText) throws IOException {
-        Email from = new Email("*"); // Verifique no SendGrid se o remetente é válido
+        Email from = new Email("ens4562@gmail.com"); // Verifique no SendGrid se o remetente é válido
         Email toEmail = new Email(to);
         Content content = new Content("text/plain", contentText);
         Mail mail = new Mail(from, subject, toEmail, content);
