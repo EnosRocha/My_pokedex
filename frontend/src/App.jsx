@@ -13,7 +13,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login setToken={setToken} />} />
+        <Route path="/" element={<Login setToken={setToken} />} />
         <Route path="/adminpokedex" element={<Adminpokedex token={token} />} />
         <Route path="/userpokedex" element={<Userpokedex token={token} />} />
         <Route path="/setupuser" element={<Setupuser token={token} />} />

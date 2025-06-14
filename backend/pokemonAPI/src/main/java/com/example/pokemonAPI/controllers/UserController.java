@@ -3,10 +3,12 @@ package com.example.pokemonAPI.controllers;
 import com.example.pokemonAPI.dtos.AddFirstPokemonDto;
 import com.example.pokemonAPI.dtos.AddPokemonDto;
 import com.example.pokemonAPI.dtos.CreateUserDto;
+import com.example.pokemonAPI.dtos.EmailEvent;
 import com.example.pokemonAPI.models.Role;
 import com.example.pokemonAPI.models.User;
 import com.example.pokemonAPI.repositories.RoleRepository;
 import com.example.pokemonAPI.repositories.UserRepositorie;
+import com.example.pokemonAPI.service.KafkaEmailProducer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.method.AuthorizeReturnObject;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class UserController {
@@ -24,11 +27,13 @@ public class UserController {
     private final UserRepositorie userRepositorie;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final KafkaEmailProducer kafkaEmailProducer;
 
-    public UserController(UserRepositorie userRepositorie, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserController(UserRepositorie userRepositorie, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder, KafkaEmailProducer kafkaEmailProducer) {
         this.userRepositorie = userRepositorie;
         this.roleRepository = roleRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.kafkaEmailProducer = kafkaEmailProducer;
     }
 
     @PostMapping("/users")
@@ -58,6 +63,7 @@ public class UserController {
             user2.setPassword(bCryptPasswordEncoder.encode(createUserDto.password()));
             user2.setRoles(Set.of(basicRole));
             user2.setPokemons(null);
+            user2.setEmail(createUserDto.email());
             userRepositorie.save(user2);
             System.out.println("user had been created");
 
@@ -90,6 +96,7 @@ public class UserController {
 
         userRepositorie.save(user);
 
+
         return ResponseEntity.ok().build();
     }
 
@@ -114,7 +121,7 @@ public class UserController {
     }
 
     @PostMapping("/addFirst")
-    private ResponseEntity<Void> addTheFirstPokemons(@RequestBody AddFirstPokemonDto dto, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> addTheFirstPokemons(@RequestBody AddFirstPokemonDto dto, @AuthenticationPrincipal Jwt jwt) {
         if (!jwt.getSubject().equals(dto.userName())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -136,6 +143,15 @@ public class UserController {
         user.getPokemons().addAll(Arrays.asList(dto.pokemons()));
 
         userRepositorie.save(user);
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            System.err.println("User " + user.getUserName() + " has no email defined. Cannot send email notification.");
+            return ResponseEntity.ok().build(); // Continue without sending email
+        }
+
+
+        EmailEvent emailEvent = new EmailEvent(user.getEmail(), "Novos Pokemons adicionados", "Voce adicionou: \n "  +  String.join("\n", dto.pokemons())
+                + "\n a sua colecao");
+        kafkaEmailProducer.sendEmail(emailEvent);
 
         return ResponseEntity.ok().build();
     }

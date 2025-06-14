@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 function Login({ setToken }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [Signup, setSignup] = useState("");
   const [error, setError] = useState("");
   const [error2, setError2] = useState("");
@@ -67,7 +68,11 @@ function Login({ setToken }) {
         headers: {
           "content-type": "application/json",
         },
-        body: JSON.stringify({ userName: username, password }),
+        body: JSON.stringify({
+          userName: username,
+          password: password,
+          email: email,
+        }),
       });
 
       if (!response.ok) {
@@ -81,13 +86,14 @@ function Login({ setToken }) {
     } finally {
       setUsername("");
       setPassword("");
+      setEmail("");
       setSignup("");
     }
   }
 
   return (
     <div className="flex h-screen h-screen justify-center items-center bg-slate-500">
-      <div className="flex flex-col justify-center gap-5 shadow-md items-center h-100 w-60 bg-white rounded-md">
+      <div className="flex flex-col justify-center gap-5 shadow-md items-center h-110 w-60 bg-white rounded-md">
         <img
           src={pikachudancing}
           alt="pikachu"
@@ -104,6 +110,12 @@ function Login({ setToken }) {
           placeholder="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="w-50 border border-gray-300 rounded-md p-2"
+        />
+        <input
+          placeholder="email - just for sign up"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-50 border border-gray-300 rounded-md p-2"
         />
         <div className="space-x-5">
